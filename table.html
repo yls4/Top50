@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data</title>
+	
+	  <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+		<!-- Table Sorter -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  </head>
+  <body onload="loadXMLDoc()">
+	<div class="container">
+	  <center><h2>Data</h2></center>
+	 <table class="table sortable" id="data">
+	 </table>
+	</div>
+	
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+  
+  <script>
+	function loadXMLDoc() {
+	  var xmlhttp = new XMLHttpRequest();
+	  xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == 4) {
+		  myFunction(xmlhttp);
+		}
+	  };
+	  xmlhttp.open("GET", "output/data.xml", true);
+	  xmlhttp.send();
+	}
+	
+	function myFunction(xml) {
+	  var i;
+	  var xmlDoc = xml.responseXML;
+	  var table="<thead><tr><th>Rank</th><th>Agency</th><th>Facebook</th><th>Twitter</th><th>Linkedin</th><th>Total</th></tr></thead><tbody>";
+	  var x = xmlDoc.getElementsByTagName("entry");
+	  var totalArr = [];
+	  for (i = 0; i<x.length; i++) {
+		var total = 0;
+		var name = "";
+		var facebook = "";
+		var twitter = "";
+		var linkedin = "";
+		if (x[i].getElementsByTagName("name").length != 0) {
+			var s = x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue;
+			name = s;
+		} 
+		if (x[i].getElementsByTagName("facebook").length != 0) {
+			var s = x[i].getElementsByTagName("facebook")[0].childNodes[0].nodeValue;
+			facebook = s;
+			s = s.replace(',',"").replace(" ", "");
+			total += parseInt(s);
+		} 
+		if (x[i].getElementsByTagName("twitter").length != 0) {
+			var s = x[i].getElementsByTagName("twitter")[0].childNodes[0].nodeValue;
+			twitter = s;
+			s = s.replace(',',"").replace(" ", "");
+			if (s.search("K") != -1) {
+				s = s.replace("K", "");
+				s = parseFloat(s) * 1000;
+			}
+			console.log(s);
+			total += parseInt(s);
+		} 
+		if (x[i].getElementsByTagName("linkedin").length != 0) {
+			var s = x[i].getElementsByTagName("linkedin")[0].childNodes[0].nodeValue;
+			linkedin = s;
+			s = s.replace(',',"").replace(" ", "");
+			total += parseInt(s);
+		}
+		totalArr.push([name, facebook, twitter, linkedin, total]);
+	  }
+	  
+	  totalArr.sort(sortFunction).reverse();
+	  
+	  for (i = 0; i <totalArr.length; i++) {
+		var rank = parseInt(i) + 1;
+		table += "<tr><td>" + rank + "</td><td>";
+		table += totalArr[i][0];
+		table += "</td><td>";
+		table += totalArr[i][1];
+		table += "</td><td>";
+		table += totalArr[i][2];
+		table += "</td><td>";
+		table += totalArr[i][3];
+		table += "</td><td>" + totalArr[i][4];
+		table += "</td></tr></tbody>";
+	  }
+	  document.getElementById("data").innerHTML = table;
+	  }
+	  
+	function sortFunction(a, b) {
+		if (a[4] === b[4]) {
+			return 0;
+		}
+		else {
+			return (a[4] < b[4]) ? -1 : 1;
+		}
+	}
+	</script>
+</html>
